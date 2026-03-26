@@ -1,0 +1,31 @@
+{
+  "name": "@tp-todo-app/backend",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "test": "jest",
+    "format": "prettier --write \"**/*.js\"",
+    "format-check": "prettier --check \"**/*.js\""
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "mysql2": "^3.14.1",
+    "sqlite3": "^5.1.7",
+    "uuid": "^11.1.0",
+    "wait-port": "^1.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.3",
+    "prettier": "^3.2.4"
+  },
+  "prettier": {
+    "trailingComma": "all",
+    "tabWidth": 4,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": true
+  }
+}
