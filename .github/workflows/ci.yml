@@ -1,0 +1,47 @@
+name: CI
+on: [push, pull_request]
+env:
+  FORCE_COLOR: 2
+
+jobs:
+  ci-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Format check
+        run: npm run format-check
+        working-directory: apps/backend
+
+      - name: Tests
+        run: npm test
+        working-directory: apps/backend
+
+  ci-client:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Format check
+        run: npm run format-check
+        working-directory: apps/client
+
+      - name: Lint
+        run: npm run lint
+        working-directory: apps/client
+
+      - name: Build
+        run: npm run build
+        working-directory: apps/client
+

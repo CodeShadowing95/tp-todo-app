@@ -1,13 +1,13 @@
 {
-  "name": "@tp-todo-app/client",
+  "name": "client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host=0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
     "format": "prettier --write \"**/*.jsx\"",
     "format-check": "prettier --check \"**/*.js\""
   },
@@ -23,6 +23,8 @@
     "sass": "^1.70.0"
   },
   "devDependencies": {
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.1",
     "eslint": "^8.55.0",
     "eslint-plugin-react": "^7.33.2",
