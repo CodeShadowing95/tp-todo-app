@@ -1,10 +1,15 @@
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const path = require('path');
+<<<<<<< HEAD
 
 const defaultEnvLocation =
     process.env.NODE_ENV === 'test' ? ':memory:' : '/etc/todos/todo.db';
 const location = process.env.SQLITE_DB_LOCATION || defaultEnvLocation;
+=======
+const defaultLocation = path.join(process.cwd(), 'data', 'todo.db');
+const location = process.env.SQLITE_DB_LOCATION || defaultLocation;
+>>>>>>> 7deb6dfb8f0394ebca6364c56875c186edca9bb2
 
 let db, dbAll, dbRun;
 

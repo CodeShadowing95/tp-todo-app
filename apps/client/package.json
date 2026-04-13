@@ -8,8 +8,13 @@
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+<<<<<<< HEAD
     "format": "prettier --write \"**/*.jsx\"",
     "format-check": "prettier --check \"**/*.js\""
+=======
+    "format": "prettier --write \"**/*.{js,jsx}\"",
+    "format-check": "prettier --check \"**/*.{js,jsx}\""
+>>>>>>> 7deb6dfb8f0394ebca6364c56875c186edca9bb2
   },
   "dependencies": {
     "@fortawesome/fontawesome-free-regular": "^5.0.13",
