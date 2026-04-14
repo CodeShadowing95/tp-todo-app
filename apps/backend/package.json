@@ -8,7 +8,8 @@
     "start": "node dist/index.js",
     "format": "prettier --write \"{src,spec}/**/*.{ts,js}\"",
     "format-check": "prettier --check \"{src,spec}/**/*.{ts,js}\"",
-    "test": "jest --detectOpenHandles --forceExit"
+    "test": "jest --detectOpenHandles --forceExit",
+    "test:coverage": "jest --coverage --runInBand --forceExit"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

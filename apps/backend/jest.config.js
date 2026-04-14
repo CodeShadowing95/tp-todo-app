@@ -3,6 +3,11 @@ module.exports = {
   testEnvironment: 'node',
   watchman: false,
   testMatch: ['**/spec/**/*.spec.ts'],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/",
+    "/build/",
+  ],
   moduleNameMapper: {
     '^@config/(.*)$': '<rootDir>/src/config/$1',
     '^@controllers/(.*)$': '<rootDir>/src/controllers/$1',
@@ -13,5 +18,10 @@ module.exports = {
     '^@routes/(.*)$': '<rootDir>/src/routes/$1',
     '^@services/(.*)$': '<rootDir>/src/services/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1'
-  }
+  },
+  collectCoverageFrom: [
+    "src/**/*.{js,ts}",
+    "!src/**/*.d.ts",
+    "!**/node_modules/**",
+  ]
 };
