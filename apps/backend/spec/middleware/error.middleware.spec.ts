@@ -1,9 +1,10 @@
-const errorHandler = require('../../src/middleware/error.middleware');
+import type { Request, Response } from 'express';
+import errorHandler from '../../src/middleware/error.middleware';
 
 describe('Error Handling Middleware', () => {
-    let req;
-    let res;
-    let next;
+    let req: Partial<Request>;
+    let res: Partial<Response>;
+    let next: jest.Mock;
 
     beforeEach(() => {
         req = {};
@@ -12,19 +13,23 @@ describe('Error Handling Middleware', () => {
             json: jest.fn(),
         };
         next = jest.fn();
-        jest.clearAllMocks();
-        // Suppress console.error during tests
+        jest.restoreAllMocks();
         jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
-        console.error.mockRestore();
+        (console.error as unknown as jest.Mock).mockRestore();
     });
 
     it('should handle Item not found error and return 404', () => {
         const error = new Error('Item not found');
 
-        errorHandler(error, req, res, next);
+        errorHandler(
+            error,
+            req as Request,
+            res as Response,
+            next as unknown as any,
+        );
 
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({
@@ -37,7 +42,12 @@ describe('Error Handling Middleware', () => {
     it('should handle Name is required error and return 400', () => {
         const error = new Error('Name is required');
 
-        errorHandler(error, req, res, next);
+        errorHandler(
+            error,
+            req as Request,
+            res as Response,
+            next as unknown as any,
+        );
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith({
@@ -50,7 +60,12 @@ describe('Error Handling Middleware', () => {
     it('should handle generic errors and return 500', () => {
         const error = new Error('Database connection failed');
 
-        errorHandler(error, req, res, next);
+        errorHandler(
+            error,
+            req as Request,
+            res as Response,
+            next as unknown as any,
+        );
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({

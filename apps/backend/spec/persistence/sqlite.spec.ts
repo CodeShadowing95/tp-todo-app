@@ -1,12 +1,8 @@
 const db = require('../../src/persistence/sqlite');
 const fs = require('fs');
-<<<<<<< HEAD
-const location = process.env.SQLITE_DB_LOCATION || '/etc/todos/todo.db';
-=======
 const path = require('path');
 const defaultLocation = path.join(process.cwd(), 'data', 'todo.db');
 const location = process.env.SQLITE_DB_LOCATION || defaultLocation;
->>>>>>> 7deb6dfb8f0394ebca6364c56875c186edca9bb2
 
 const ITEM = {
     id: '7aef3d7c-d301-4846-8358-2a91ec9d6be3',
@@ -20,13 +16,6 @@ beforeEach(() => {
     }
 });
 
-<<<<<<< HEAD
-afterEach(async () => {
-    await db.teardown();
-});
-
-=======
->>>>>>> 7deb6dfb8f0394ebca6364c56875c186edca9bb2
 test('it initializes correctly', async () => {
     await db.init();
 });

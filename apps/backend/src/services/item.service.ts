@@ -1,12 +1,13 @@
-const itemRepository = require('../repositories/item.repository');
-const { v4: uuid } = require('uuid');
+import itemRepository from '../repositories/item.repository';
+import { v4 as uuid } from 'uuid';
+import { ItemDto } from '../dto/item.dto';
 
 class ItemService {
     async getAllItems() {
         return await itemRepository.getItems();
     }
 
-    async getItemById(id) {
+    async getItemById(id: string) {
         const item = await itemRepository.getItemById(id);
         if (!item) {
             throw new Error('Item not found');
@@ -14,7 +15,7 @@ class ItemService {
         return item;
     }
 
-    async createItem(name) {
+    async createItem(name: string) {
         if (!name) {
             throw new Error('Name is required');
         }
@@ -23,22 +24,22 @@ class ItemService {
             id: uuid(),
             name: name,
             completed: false,
-        };
+        } as ItemDto;
 
         return await itemRepository.createItem(item);
     }
 
-    async updateItem(id, itemData) {
+    async updateItem(id: string, itemData: ItemDto) {
         await this.getItemById(id);
 
         return await itemRepository.updateItem(id, itemData);
     }
 
-    async deleteItem(id) {
+    async deleteItem(id: string) {
         await this.getItemById(id);
 
         await itemRepository.deleteItem(id);
     }
 }
 
-module.exports = new ItemService();
+export default new ItemService();

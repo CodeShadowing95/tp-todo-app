@@ -13,10 +13,14 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm rebuild sqlite3 --workspace apps/backend
+      - run: npm rebuild sqlite3 --workspace=backend
 
       - name: Format check
         run: npm run format-check
+        working-directory: apps/backend
+
+      - name: Build
+        run: npm run build
         working-directory: apps/backend
 
       - name: Tests
