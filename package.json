@@ -16,5 +16,9 @@
     "format": "npm run format --workspaces --if-present",
     "format-check": "npm run format-check --workspaces --if-present",
     "validate": "npm run lint --workspaces --if-present && npm run format --workspaces --if-present && npm run test --workspaces --if-present"
+  },
+  "dependencies": {
+    "prom-client": "^15.1.3",
+    "winston": "^3.19.0"
   }
 }
