@@ -1,0 +1,11 @@
+{
+  "name": "config",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "lint": "npm exec eslint src --ext .ts"
+  },
+  "exports": {
+    "./tsconfig/base": "./tsconfig/base.json"
+  }
+}

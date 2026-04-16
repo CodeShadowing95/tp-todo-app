@@ -3,7 +3,7 @@ const router = express.Router();
 
 const CHECK_HEALTH = '✅ Health OK';
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
     res.send({
         health: CHECK_HEALTH,
     });

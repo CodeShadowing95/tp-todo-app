@@ -7,24 +7,24 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash';
 import faCheckSquare from '@fortawesome/fontawesome-free-regular/faCheckSquare';
 import faSquare from '@fortawesome/fontawesome-free-regular/faSquare';
+import { apiFetch } from '../api';
 import './ItemDisplay.scss';
 
 export function ItemDisplay({ item, onItemUpdate, onItemRemoval }) {
     const toggleCompletion = () => {
-        fetch(`/api/items/${item.id}`, {
+        apiFetch(`/api/items/${item.id}`, {
             method: 'PUT',
             body: JSON.stringify({
                 name: item.name,
                 completed: !item.completed,
             }),
-            headers: { 'Content-Type': 'application/json' },
         })
             .then((r) => r.json())
             .then(onItemUpdate);
     };
 
     const removeItem = () => {
-        fetch(`/api/items/${item.id}`, { method: 'DELETE' }).then(() =>
+        apiFetch(`/api/items/${item.id}`, { method: 'DELETE' }).then(() =>
             onItemRemoval(item),
         );
     };

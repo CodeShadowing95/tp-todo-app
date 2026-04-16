@@ -3,7 +3,7 @@ import { ItemDto } from '@dto/item.dto';
 import ItemService from '@services/item.service';
 
 class ItemController {
-    async getItems(req: Request, res: Response) {
+    async getItems(_req: Request, res: Response) {
         const items: ItemDto[] = await ItemService.getAllItems();
         res.send(items);
     }

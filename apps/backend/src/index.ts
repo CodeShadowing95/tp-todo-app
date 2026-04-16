@@ -4,8 +4,8 @@ import errorHandler from './middleware/error.middleware';
 import * as db from './persistence';
 import apiRoutes from './routes';
 import logger from './utils/logger';
-import { requestLogger } from './middleware/loggermiddleware';
-import { metricsMiddleware } from './middleware/metricsmiddleware';
+import { requestLogger } from './middleware/logger.middleware';
+import { metricsMiddleware } from './middleware/metrics.middleware';
 import { register } from './utils/metrics';
 
 dotenv.config();
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(requestLogger);
 app.use(metricsMiddleware);
 
-app.get('/metrics', async (_req, res) => {
+app.get('/metrics', async (_req: express.Request, res: express.Response) => {
     try {
         res.set('Content-Type', register.contentType);
         res.end(await register.metrics());

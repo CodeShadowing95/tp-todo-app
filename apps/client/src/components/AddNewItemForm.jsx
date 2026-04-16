@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
+import { apiFetch } from '../api';
 
 export function AddItemForm({ onNewItem }) {
     const [newItem, setNewItem] = useState('');
@@ -12,13 +13,10 @@ export function AddItemForm({ onNewItem }) {
         e.preventDefault();
         setSubmitting(true);
 
-        const options = {
+        apiFetch('/api/items', {
             method: 'POST',
             body: JSON.stringify({ name: newItem }),
-            headers: { 'Content-Type': 'application/json' },
-        };
-
-        fetch('/api/items', options)
+        })
             .then((r) => r.json())
             .then((item) => {
                 onNewItem(item);

@@ -1,5 +1,5 @@
 import { ItemDto } from '../dto/item.dto';
-const db = require('../persistence');
+import * as db from '../persistence';
 
 class ItemRepository {
     async getItems() {
