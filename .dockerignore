@@ -1,0 +1,7 @@
+node_modules
+**/node_modules
+.git
+npm-debug.log
+apps/backend/dist
+apps/backend/coverage
+apps/client

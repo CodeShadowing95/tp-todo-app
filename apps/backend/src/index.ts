@@ -18,6 +18,10 @@ app.use(express.json());
 app.use(requestLogger);
 app.use(metricsMiddleware);
 
+app.get('/health', (_req: express.Request, res: express.Response) => {
+    res.status(200).send('OK');
+});
+
 app.get('/metrics', async (_req: express.Request, res: express.Response) => {
     try {
         res.set('Content-Type', register.contentType);

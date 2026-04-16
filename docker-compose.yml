@@ -1,8 +1,8 @@
 services:
   backend:
     build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/backend/Dockerfile
       target: development
     container_name: todo_backend
     restart: unless-stopped
@@ -10,11 +10,12 @@ services:
       - ./apps/backend/.env
     ports:
       - "3000:3000"
-    volumes:
-      - ./apps/backend:/app
-      - /app/node_modules
-      - ./apps/backend/data:/app/data
-    command: sh -c "npm install && npm run dev"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   client:
     build:
@@ -24,13 +25,16 @@ services:
     container_name: todo_client
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    environment:
+      - VITE_PROXY_TARGET=http://backend:3000
     ports:
       - "5173:5173"
     volumes:
       - ./apps/client:/app
       - /app/node_modules
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    command: sh -c "npm install && npm run dev"
 
   prometheus:
     image: prom/prometheus:latest
