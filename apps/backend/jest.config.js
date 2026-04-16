@@ -5,6 +5,7 @@ module.exports = {
     testMatch: ['**/spec/**/*.spec.ts'],
     testPathIgnorePatterns: ['/node_modules/', '/dist/', '/build/'],
     moduleNameMapper: {
+        '^db$': '<rootDir>/../../packages/db/src/index.ts',
         '^@config/(.*)$': '<rootDir>/src/config/$1',
         '^@controllers/(.*)$': '<rootDir>/src/controllers/$1',
         '^@dto/(.*)$': '<rootDir>/src/dto/$1',
