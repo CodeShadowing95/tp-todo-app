@@ -5,11 +5,9 @@ const logger = winston.createLogger({
     format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.errors({ stack: true }),
-        winston.format.json() // LOGS JSON
+        winston.format.json(), // LOGS JSON
     ),
-    transports: [
-        new winston.transports.Console(),
-    ],
+    transports: [new winston.transports.Console()],
 });
 
 export default logger;
