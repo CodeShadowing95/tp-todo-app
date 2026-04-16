@@ -26,5 +26,8 @@ Thumbs.db
 *.db
 *.sqlite
 
+# Coverageage reports
+coverage/
+
 # Audit report
 AUDIT.md
