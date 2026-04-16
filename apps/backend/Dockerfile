@@ -19,6 +19,8 @@ COPY packages/db/ ./packages/db/
 COPY packages/config/ ./packages/config/
 COPY apps/backend/ ./apps/backend/
 
+RUN npm run build --workspace=db
+
 EXPOSE 3000
 
 CMD ["npm", "run", "dev", "--workspace=apps/backend"]
