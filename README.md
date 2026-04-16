@@ -1,56 +1,111 @@
-# Getting Started Todo App
+# TP Todo App — Guide d'installation
 
-This project provides a sample todo list application. It demonstrates all of
-the current Docker best practices, ranging from the Compose file, to the
-Dockerfile, to CI (using GitHub Actions), and running tests. It's intended to 
-be well-documented to ensure anyone can come in and easily learn.
+Application Todo full-stack en monorepo (client + API) avec observabilité (Prometheus/Grafana).
 
-## Application architecture
+## Pré-requis
 
-![image](https://github.com/docker/getting-started-todo-app/assets/313480/c128b8e4-366f-4b6f-ad73-08e6652b7c4d)
+À avoir sur votre machine :
+
+- Git
+- Docker + Docker Compose (Docker Desktop recommandé)
+- Node.js (idéalement 20+) et npm
+- Ports disponibles : `5173`, `3000`, `9090`, `3001`
+
+Optionnel (utile si vous lancez des scripts en local hors Docker) :
+
+- Un terminal Unix (macOS/Linux/WSL)
 
 
-This sample application is a simple React frontend that receives data from a
-Node.js backend. 
+## Démarrage rapide
 
-When the application is packaged and shipped, the frontend is compiled into
-static HTML, CSS, and JS and then bundled with the backend where it is then
-served as static assets. So no... there is no server-side rendering going on
-with this sample app.
-
-During development, since the backend and frontend need different dev tools, 
-they are split into two separate services. This allows [Vite](https://vitejs.dev/) 
-to manage the React app while [nodemon](https://nodemon.io/) works with the 
-backend. With containers, it's easy to separate the development needs!
-
-## Development
-
-To spin up the project, simply install Docker Desktop and then run the following 
-commands:
-
-```
-git clone https://github.com/docker/getting-started-todo-app
-cd getting-started-todo-app
-docker compose up --watch
+```bash
+git clone https://github.com/CodeShadowing95/tp-todo-app
+cd tp-todo-app
 ```
 
-You'll see several container images get downloaded from Docker Hub and, after a
-moment, the application will be up and running! No need to install or configure
-anything on your machine!
+Créer 2 fichiers `.env` :
 
-Simply open to [http://localhost](http://localhost) to see the app up and running!
+- `.env` (root) : utilisé par les outils du monorepo (ex: scripts DB/migrations).
+- `apps/backend/.env` : utilisé par l’API au démarrage (auth + accès DB).
 
-Any changes made to either the backend or frontend should be seen immediately
-without needing to rebuild or restart the containers.
+Copiez-collez ces valeurs dans ces fichiers `.env`:
+```bash
+NODE_ENV=development
 
-To help with the database, the development stack also includes phpMyAdmin, which
-can be accessed at [http://db.localhost](http://db.localhost) (most browsers will 
-resolve `*.localhost` correctly, so no hosts file changes should be required).
+# Database
+DATABASE_URL=postgresql://neondb_owner:npg_4xr1XykGAfZC@ep-wild-cloud-aliinkug-pooler.c-3.eu-central-1.aws.neon.tech/todo_db?sslmode=require&channel_binding=require
 
-### Tearing it down
-
-When you're done, simply remove the containers by running the following command:
-
+# Auth
+JWT_SECRET=<your-secret-key>
 ```
+
+Pour générer un secret JWT, vous pouvez utiliser la commande suivante :
+
+```bash
+openssl rand -hex 32
+```
+
+le code généré est votre secret JWT. Vous pouvez le copier dans le fichier `.env` de `apps/backend/.env` et dans `.env` (root).
+
+## Démarrer l’application (Docker Compose)
+
+Depuis la racine du projet :
+
+```bash
+docker compose up --build
+```
+
+Lance tous les services (backend, client, prometheus, grafana).
+
+### Services & URLs
+
+| Service | Conteneur | URL |
+| --- | --- | --- |
+| Frontend (Vite) | `todo_client` | http://localhost:5173/ |
+| Backend (API) | `todo_backend` | http://localhost:3000/health |
+| Prometheus | `todo_prometheus` | http://localhost:9090/ |
+| Grafana | `todo_grafana` | http://localhost:3001/ |
+
+### Vérifier que tout est “au vert”
+
+Lister l’état des conteneurs :
+
+```bash
+docker compose ps
+```
+
+Points de contrôle :
+
+- `todo_backend` doit être en état `healthy` (healthcheck via `GET /health`).
+- `todo_client` n’a pas de healthcheck Docker par défaut : vérifiez qu’il est `Up` et que l’URL répond.
+
+Vérifications rapides :
+
+```bash
+curl -i http://localhost:3000/health
+curl -i http://localhost:5173/
+```
+
+## Accéder à l’application
+
+Ouvrir :
+
+- http://localhost:5173/
+
+Le formulaire de connexion doit s’afficher.
+
+### Compte de test
+
+- Email : `test@example.com`
+- Mot de passe : `Test1234`
+
+Vous pouvez aussi créer un compte directement depuis l’interface.
+
+Après connexion, vous serez redirigé vers la page de gestion : création et administration de vos todo-lists.
+
+## Arrêter les services
+
+```bash
 docker compose down
 ```
+
