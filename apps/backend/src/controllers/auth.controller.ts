@@ -43,7 +43,10 @@ class AuthController {
         const user = rows[0];
 
         const token = signToken(user.id);
-        res.status(201).json({ token, user: { id: user.id, email: user.email } });
+        res.status(201).json({
+            token,
+            user: { id: user.id, email: user.email },
+        });
     }
 
     async login(req: Request, res: Response) {

@@ -17,9 +17,7 @@ export function LoginForm({ onAuth }) {
         setError(null);
         setLoading(true);
 
-        const endpoint = isRegister
-            ? '/api/auth/register'
-            : '/api/auth/login';
+        const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
 
         try {
             const res = await fetch(endpoint, {
@@ -83,11 +81,7 @@ export function LoginForm({ onAuth }) {
                     className="w-100 mb-3"
                     disabled={loading}
                 >
-                    {loading
-                        ? 'Loading...'
-                        : isRegister
-                          ? 'Register'
-                          : 'Login'}
+                    {loading ? 'Loading...' : isRegister ? 'Register' : 'Login'}
                 </Button>
             </Form>
 

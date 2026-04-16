@@ -1,6 +1,7 @@
 import { ItemDto } from '../dto/item.dto';
 
-const isTestEnv = process.env.NODE_ENV === 'test' || !!process.env.JEST_WORKER_ID;
+const isTestEnv =
+    process.env.NODE_ENV === 'test' || !!process.env.JEST_WORKER_ID;
 
 const memory = new Map<string, ItemDto>();
 
