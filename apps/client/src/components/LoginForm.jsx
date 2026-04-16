@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -108,3 +109,7 @@ export function LoginForm({ onAuth }) {
         </div>
     );
 }
+
+LoginForm.propTypes = {
+    onAuth: PropTypes.func,
+};
