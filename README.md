@@ -188,7 +188,128 @@ npm run dev --workspace=apps/client
 6) Ouvrir l’application
 - Frontend : http://localhost:5173
 
+## Lancer avec Kubernetes (local)
+
+### Pré-requis
+- Docker Desktop avec Kubernetes activé
+- `kubectl` configuré (automatique avec Docker Desktop)
+- Images Docker buildées localement
+
+### Étapes
+
+**1) Builder les images Docker**
+
+```bash
+cd C:\Users\ukisu\Documents\tp-todo-app
+
+# Backend
+docker build -t todo-backend:latest -f apps/backend/Dockerfile apps/backend
+
+# Frontend
+docker build -t todo-client:latest -f apps/client/Dockerfile apps/client
+```
+
+**2) Créer le namespace**
+
+```powershell
+kubectl create namespace todo-app
+```
+
+**3) Appliquer tous les manifests Kubernetes**
+
+```powershell
+kubectl apply -f k8s/
+```
+
+Cela crée :
+- ConfigMap avec variables d'env (`VITE_PROXY_TARGET`, `DATABASE_URL`, etc.)
+- Secrets (données sensibles)
+- Deployments : backend (2 replicas), client (2 replicas), Prometheus, Grafana
+- Services : ClusterIP pour backend, LoadBalancer pour client/Grafana/Prometheus
+
+**4) Vérifier que tout est déployé**
+
+```powershell
+kubectl get all -n todo-app
+```
+
+Vérifier que :
+- `backend-deployment`: `2/2 Ready`
+- `client-deployment`: `2/2 Ready`
+- Tous les pods sont `Running` avec 0 restarts
+
+```powershell
+kubectl get pods -n todo-app
+```
+
+**5) Accéder à l'application**
+
+**Option A : Via LoadBalancer (recommandé)**
+
+```powershell
+kubectl get svc client-service -n todo-app
+```
+
+L'EXTERNAL-IP sera `172.19.0.6` (ou similaire). Allez sur :
+- **Frontend** : http://172.19.0.6:5173
+- **Grafana** : http://172.19.0.5:3001
+- **Prometheus** : http://172.19.0.7:9090
+
+**Option B : Via port-forward (si LoadBalancer ne marche pas)**
+
+```powershell
+# Frontend
+kubectl port-forward svc/client-service 5173:5173 -n todo-app
+
+# Backend
+kubectl port-forward svc/backend-service 3000:3000 -n todo-app
+
+# Grafana
+kubectl port-forward svc/grafana-service 3001:3001 -n todo-app
+
+# Prometheus
+kubectl port-forward svc/prometheus-service 9090:9090 -n todo-app
+```
+
+Puis allez sur :
+- **Frontend** : http://localhost:5173
+- **Backend health** : http://localhost:3000/health
+- **Grafana** : http://localhost:3001
+- **Prometheus** : http://localhost:9090
+
+**6) Vérifier les logs**
+
+```powershell
+# Logs du client (suivi en temps réel)
+kubectl logs -f -l app=client -n todo-app
+
+# Logs du backend
+kubectl logs -f -l app=backend -n todo-app
+
+# Détails d'un pod spécifique
+kubectl describe pod <pod-name> -n todo-app
+```
+
+**7) Arrêter tout**
+
+```powershell
+kubectl delete namespace todo-app
+```
+
+### Points clés pour Kubernetes local
+
+| Aspect | Configuration |
+|--------|---------------|
+| **Health probes** | initialDelaySeconds: 40 pour Vite (démarrage lent) |
+| **Proxy API** | `VITE_PROXY_TARGET=http://backend-service:3000` |
+| **Service discovery** | Utiliser `backend-service:3000` (DNS interne) |
+| **LoadBalancer IP** | Docker Desktop attribue une IP interne (172.19.x.x) |
+| **Images Docker** | Doivent être présentes localement ou sur un registry |
+
 ## Dépannage rapide
 
-- Si l’inscription/login affiche “Network error” en Docker: vérifier que les conteneurs `backend` et `client` tournent (`docker compose ps`) puis relancer `docker compose up -d --build`.
-- Si l’auth renvoie une erreur serveur (500) au premier lancement: la base n’est probablement pas migrée → rejouer la commande de migration.
+- Si l'inscription/login affiche "Network error" en Docker: vérifier que les conteneurs `backend` et `client` tournent (`docker compose ps`) puis relancer `docker compose up -d --build`.
+- Si l'auth renvoie une erreur serveur (500) au premier lancement: la base n'est probablement pas migrée → rejouer la commande de migration.
+- En Kubernetes, si les pods crashent (`0/1 Running`): vérifier les logs avec `kubectl logs -f <pod-name> -n todo-app`
+- Si le proxy API ne fonctionne pas: vérifier que `VITE_PROXY_TARGET` est bien configuré dans la ConfigMap (`kubectl get configmap app-config -n todo-app -o yaml`)
+- LoadBalancer ne répond pas ? Utilisez `kubectl port-forward` à la place.
