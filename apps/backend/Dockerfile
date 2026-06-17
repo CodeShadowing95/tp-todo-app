@@ -23,4 +23,5 @@ RUN npm run build --workspace=db
 
 EXPOSE 3000
 
+# Run in dev mode (uses tsx which handles imports correctly)
 CMD ["npm", "run", "dev", "--workspace=apps/backend"]

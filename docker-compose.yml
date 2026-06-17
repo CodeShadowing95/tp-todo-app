@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: apps/backend/Dockerfile
       target: development
+    image: todo-backend:latest
     container_name: todo_backend
     restart: unless-stopped
     env_file:
@@ -22,6 +23,7 @@ services:
       context: ./apps/client
       dockerfile: Dockerfile
       target: development
+    image: todo-client:latest
     container_name: todo_client
     restart: unless-stopped
     depends_on:

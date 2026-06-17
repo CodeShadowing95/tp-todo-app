@@ -105,7 +105,90 @@ Après connexion, vous serez redirigé vers la page de gestion : création et ad
 
 ## Arrêter les services
 
+# TP Todo App — Onboarding (FR)
+
+Application composée de:
+- Frontend React (Vite) : http://localhost:5173
+- Backend Node/Express : http://localhost:3000
+- Healthcheck backend : http://localhost:3000/health
+
+## Lancer avec Docker (recommandé)
+
+### Pré-requis
+- Docker Desktop (ou Docker Engine) avec `docker compose`
+
+### Étapes
+1) Cloner le repo et se placer à la racine
+```bash
+git clone <URL_DU_REPO>
+cd tp-todo-app
+```
+
+2) Démarrer les conteneurs (build inclus)
+```bash
+docker compose up -d --build
+```
+
+3) Initialiser la base de données (à faire une fois)
+```bash
+docker compose run --rm backend npm run migrate --workspace=db
+```
+
+4) Ouvrir l’application
+- Frontend : http://localhost:5173
+- Backend (optionnel) : http://localhost:3000/health
+
+### Arrêter
 ```bash
 docker compose down
 ```
 
+### Logs utiles
+```bash
+docker compose logs -f backend
+docker compose logs -f client
+```
+
+## Lancer sans Docker
+
+### Pré-requis
+- Node.js 20+
+- npm
+- Une base PostgreSQL accessible via `DATABASE_URL` (ex: Neon / Postgres local)
+
+### Étapes
+1) Installer les dépendances (monorepo)
+```bash
+npm install
+```
+
+2) Configurer les variables d’environnement du backend
+- Créer/éditer `apps/backend/.env` avec au minimum:
+```env
+NODE_ENV=development
+DATABASE_URL=postgresql://<user>:<password>@<host>:5432/<db>?sslmode=require
+JWT_SECRET=change-me
+```
+
+3) Appliquer les migrations (à faire une fois)
+```bash
+DATABASE_URL="postgresql://..." npm run migrate --workspace=db
+```
+
+4) Lancer le backend (terminal 1)
+```bash
+npm run dev --workspace=apps/backend
+```
+
+5) Lancer le client (terminal 2)
+```bash
+npm run dev --workspace=apps/client
+```
+
+6) Ouvrir l’application
+- Frontend : http://localhost:5173
+
+## Dépannage rapide
+
+- Si l’inscription/login affiche “Network error” en Docker: vérifier que les conteneurs `backend` et `client` tournent (`docker compose ps`) puis relancer `docker compose up -d --build`.
+- Si l’auth renvoie une erreur serveur (500) au premier lancement: la base n’est probablement pas migrée → rejouer la commande de migration.
