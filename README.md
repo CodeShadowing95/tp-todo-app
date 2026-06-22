@@ -61,11 +61,11 @@ Lance tous les services (backend, auth, client, prometheus, grafana).
 
 | Service | Conteneur | URL |
 | --- | --- | --- |
-| Frontend (Vite) | `todo_client` | http://localhost:5173/ |
+| Frontend (Vite) | `todo_client` | http://localhost:5180/ |
 | Backend (API) | `todo_backend` | http://localhost:3000/health |
 | Auth (API) | `todo_auth` | http://localhost:3002/health |
-| Prometheus | `todo_prometheus` | http://localhost:9090/ |
-| Grafana | `todo_grafana` | http://localhost:3001/ |
+| Prometheus | `todo_prometheus` | http://localhost:9091/ |
+| Grafana | `todo_grafana` | http://localhost:3003/ |
 
 ### Vérifier que tout est “au vert”
 
@@ -84,14 +84,14 @@ Vérifications rapides :
 
 ```bash
 curl -i http://localhost:3000/health
-curl -i http://localhost:5173/
+curl -i http://localhost:5180/
 ```
 
 ## Accéder à l’application
 
 Ouvrir :
 
-- http://localhost:5173/
+- http://localhost:5180/
 
 Le formulaire de connexion doit s’afficher.
 
@@ -139,7 +139,7 @@ docker compose run --rm auth npm run migrate:auth --workspace=db
 ```
 
 5) Ouvrir l’application
-- Frontend : http://localhost:5173
+- Frontend : http://localhost:5180
 - Backend (optionnel) : http://localhost:3000/health
 
 ### Arrêter

@@ -18,6 +18,25 @@ services:
       retries: 10
       start_period: 30s
 
+  auth:
+    build:
+      context: .
+      dockerfile: apps/auth/Dockerfile
+      target: development
+    image: todo-auth:latest
+    container_name: todo_auth
+    restart: unless-stopped
+    env_file:
+      - ./apps/auth/.env
+    ports:
+      - "3002:3001"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   client:
     build:
       context: ./apps/client
@@ -29,10 +48,13 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      auth:
+        condition: service_healthy
     environment:
       - VITE_PROXY_TARGET=http://backend:3000
+      - VITE_AUTH_PROXY_TARGET=http://auth:3001
     ports:
-      - "5173:5173"
+      - "5180:5173"
     volumes:
       - ./apps/client:/app
       - /app/node_modules
@@ -43,18 +65,19 @@ services:
     container_name: todo_prometheus
     restart: unless-stopped
     ports:
-      - "9090:9090"
+      - "9091:9090"
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
       - backend
+      - auth
 
   grafana:
     image: grafana/grafana:latest
     container_name: todo_grafana
     restart: unless-stopped
     ports:
-      - "3001:3000"
+      - "3003:3000"
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:

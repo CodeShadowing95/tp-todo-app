@@ -54,18 +54,47 @@ function createDb(
   return drizzlePostgres(sql, { schema })
 }
 
-const todoDatabaseUrl = getDatabaseUrl(
-  'DATABASE_URL',
-  isTestEnv ? defaultTestDatabaseUrl : undefined,
-)
+type DrizzleClient = ReturnType<typeof createDb>
 
-const authDatabaseUrl = getDatabaseUrl(
-  'AUTH_DATABASE_URL',
-  isTestEnv ? todoDatabaseUrl : undefined,
-)
+function createLazyDbProxy(getClient: () => DrizzleClient) {
+  return new Proxy({} as DrizzleClient, {
+    get(_target, prop, receiver) {
+      const client = getClient()
+      const value = Reflect.get(client as object, prop, receiver)
+      return typeof value === 'function' ? value.bind(client) : value
+    },
+  })
+}
 
-export const db = createDb(todoDatabaseUrl, todoSchema)
-export const authDb = createDb(authDatabaseUrl, authSchema)
+let dbInstance: DrizzleClient | null = null
+let authDbInstance: DrizzleClient | null = null
+
+function getTodoDb() {
+  if (!dbInstance) {
+    const todoDatabaseUrl = getDatabaseUrl(
+      'DATABASE_URL',
+      isTestEnv ? defaultTestDatabaseUrl : undefined,
+    )
+    dbInstance = createDb(todoDatabaseUrl, todoSchema)
+  }
+
+  return dbInstance
+}
+
+function getAuthDb() {
+  if (!authDbInstance) {
+    const authDatabaseUrl = getDatabaseUrl(
+      'AUTH_DATABASE_URL',
+      isTestEnv ? getDatabaseUrl('DATABASE_URL', defaultTestDatabaseUrl) : undefined,
+    )
+    authDbInstance = createDb(authDatabaseUrl, authSchema)
+  }
+
+  return authDbInstance
+}
+
+export const db = createLazyDbProxy(getTodoDb)
+export const authDb = createLazyDbProxy(getAuthDb)
 
 export type DB = typeof db
 export type AuthDB = typeof authDb
