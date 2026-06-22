@@ -33,7 +33,7 @@ Copiez-collez ces valeurs dans ces fichiers `.env`:
 NODE_ENV=development
 
 # Database
-DATABASE_URL=postgresql://neondb_owner:npg_4xr1XykGAfZC@ep-wild-cloud-aliinkug-pooler.c-3.eu-central-1.aws.neon.tech/todo_db?sslmode=require&channel_binding=require
+DATABASE_URL=<your-neon-database-url>
 
 # Auth
 JWT_SECRET=<your-secret-key>
@@ -55,7 +55,7 @@ Depuis la racine du projet :
 docker compose up --build
 ```
 
-Lance tous les services (backend, client, prometheus, grafana).
+Lance tous les services (backend, auth, client, prometheus, grafana).
 
 ### Services & URLs
 
@@ -63,6 +63,7 @@ Lance tous les services (backend, client, prometheus, grafana).
 | --- | --- | --- |
 | Frontend (Vite) | `todo_client` | http://localhost:5173/ |
 | Backend (API) | `todo_backend` | http://localhost:3000/health |
+| Auth (API) | `todo_auth` | http://localhost:3002/health |
 | Prometheus | `todo_prometheus` | http://localhost:9090/ |
 | Grafana | `todo_grafana` | http://localhost:3001/ |
 
@@ -124,17 +125,20 @@ git clone <URL_DU_REPO>
 cd tp-todo-app
 ```
 
-2) Démarrer les conteneurs (build inclus)
+2) Configurer `apps/backend/.env` et `apps/auth/.env` avec vos URLs Neon et le même `JWT_SECRET`
+
+3) Démarrer les conteneurs (build inclus)
 ```bash
 docker compose up -d --build
 ```
 
-3) Initialiser la base de données (à faire une fois)
+4) Initialiser la base de données (à faire une fois)
 ```bash
 docker compose run --rm backend npm run migrate --workspace=db
+docker compose run --rm auth npm run migrate:auth --workspace=db
 ```
 
-4) Ouvrir l’application
+5) Ouvrir l’application
 - Frontend : http://localhost:5173
 - Backend (optionnel) : http://localhost:3000/health
 
@@ -146,6 +150,7 @@ docker compose down
 ### Logs utiles
 ```bash
 docker compose logs -f backend
+docker compose logs -f auth
 docker compose logs -f client
 ```
 
@@ -167,22 +172,35 @@ npm install
 ```env
 NODE_ENV=development
 DATABASE_URL=postgresql://<user>:<password>@<host>:5432/<db>?sslmode=require
+JWT_SECRET=change-me
+```
+
+3) Configurer les variables d’environnement du service auth
+- Créer/éditer `apps/auth/.env` avec au minimum:
+```env
+NODE_ENV=development
+PORT=3001
 AUTH_DATABASE_URL=postgresql://<user>:<password>@<host>:5432/<auth_db>?sslmode=require
 JWT_SECRET=change-me
 ```
 
-3) Appliquer les migrations (à faire une fois)
+4) Appliquer les migrations (à faire une fois)
 ```bash
 DATABASE_URL="postgresql://..." npm run migrate --workspace=db
 AUTH_DATABASE_URL="postgresql://..." npm run migrate:auth --workspace=db
 ```
 
-4) Lancer le backend (terminal 1)
+5) Lancer le backend (terminal 1)
 ```bash
 npm run dev --workspace=apps/backend
 ```
 
-5) Lancer le client (terminal 2)
+6) Lancer le service auth (terminal 2)
+```bash
+npm run dev --workspace=apps/auth
+```
+
+7) Lancer le client (terminal 3)
 ```bash
 npm run dev --workspace=apps/client
 ```
