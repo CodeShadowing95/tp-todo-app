@@ -9,6 +9,12 @@ module.exports = {
     ],
     ignorePatterns: ['dist', '.eslintrc.cjs'],
     parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+    overrides: [
+        {
+            files: ['vite.config.js'],
+            env: { node: true },
+        },
+    ],
     settings: { react: { version: '18.2' } },
     plugins: ['react-refresh'],
     rules: {

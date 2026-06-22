@@ -9,8 +9,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "format": "prettier --write \"**/*.{js,jsx}\"",
-    "format-check": "prettier --check \"**/*.{js,jsx}\"",
-    "validate": ""
+    "format-check": "prettier --check \"**/*.{js,jsx}\""
   },
   "dependencies": {
     "@fortawesome/fontawesome-free-regular": "^5.0.13",

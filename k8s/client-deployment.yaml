@@ -4,7 +4,7 @@ metadata:
   name: client-deployment
   namespace: todo-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: client
@@ -17,21 +17,21 @@ spec:
       containers:
       - name: client
         image: todo-client:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5173
           name: http
         env:
-        - name: REACT_APP_API_URL
-          valueFrom:
-            configMapKeyRef:
-              name: app-config
-              key: REACT_APP_API_URL
         - name: VITE_PROXY_TARGET
           valueFrom:
             configMapKeyRef:
               name: app-config
               key: VITE_PROXY_TARGET
+        - name: VITE_AUTH_PROXY_TARGET
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: VITE_AUTH_PROXY_TARGET
         resources:
           requests:
             memory: "128Mi"

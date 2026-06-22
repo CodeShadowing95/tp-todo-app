@@ -1,44 +1,44 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-deployment
+  name: auth-deployment
   namespace: todo-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend
+      app: auth
   template:
     metadata:
       labels:
-        app: backend
+        app: auth
     spec:
       automountServiceAccountToken: false
       containers:
-      - name: backend
-        image: todo-backend:latest
+      - name: auth
+        image: todo-auth:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 3000
+        - containerPort: 3001
           name: http
         env:
-        - name: DATABASE_URL
+        - name: AUTH_DATABASE_URL
           valueFrom:
             secretKeyRef:
               name: app-secrets
-              key: DATABASE_URL
+              key: AUTH_DATABASE_URL
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: app-secrets
               key: JWT_SECRET
         - name: REDIS_URL
-          value: redis://redis-task:6379
+          value: redis://redis-auth:6379
         - name: PORT
           valueFrom:
             configMapKeyRef:
               name: app-config
-              key: BACKEND_PORT
+              key: AUTH_PORT
         - name: NODE_ENV
           valueFrom:
             configMapKeyRef:
@@ -54,12 +54,12 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 3001
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 3001
           initialDelaySeconds: 10
           periodSeconds: 5

@@ -1,11 +1,7 @@
 import itemRepository from '../repositories/item.repository';
 import { v4 as uuid } from 'uuid';
 import { ItemDto } from '../dto/item.dto';
-import {
-    deleteCachedKeys,
-    getCachedJson,
-    setCachedJson,
-} from '../utils/cache';
+import { deleteCachedKeys, getCachedJson, setCachedJson } from '../utils/cache';
 
 const ITEMS_CACHE_KEY = 'tasks:all';
 
@@ -52,7 +48,10 @@ class ItemService {
         } as ItemDto;
 
         const createdItem = await itemRepository.createItem(item);
-        await setCachedJson(getItemCacheKey(createdItem.id as string), createdItem);
+        await setCachedJson(
+            getItemCacheKey(createdItem.id as string),
+            createdItem,
+        );
         await deleteCachedKeys(ITEMS_CACHE_KEY);
         return createdItem;
     }

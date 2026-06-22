@@ -244,29 +244,40 @@ npm run dev --workspace=apps/client
 cd C:\Users\ukisu\Documents\tp-todo-app
 
 # Backend
-docker build -t todo-backend:latest -f apps/backend/Dockerfile apps/backend
+docker build -t todo-backend:latest -f apps/backend/Dockerfile .
+
+# Auth
+docker build -t todo-auth:latest -f apps/auth/Dockerfile .
 
 # Frontend
 docker build -t todo-client:latest -f apps/client/Dockerfile apps/client
+
+# Gateway
+docker build -t todo-gateway:latest -f gateway/Dockerfile .
 ```
 
-**2) Créer le namespace**
+**2) Configurer les secrets Kubernetes**
 
 ```powershell
-kubectl create namespace todo-app
+notepad k8s\secrets.yaml
 ```
+
+Renseignez au minimum :
+- `DATABASE_URL`
+- `AUTH_DATABASE_URL`
+- `JWT_SECRET`
 
 **3) Appliquer tous les manifests Kubernetes**
 
 ```powershell
-kubectl apply -f k8s/
+kubectl apply -k k8s
 ```
 
 Cela crée :
-- ConfigMap avec variables d'env (`VITE_PROXY_TARGET`, `DATABASE_URL`, etc.)
-- Secrets (données sensibles)
-- Deployments : backend (2 replicas), client (2 replicas), Prometheus, Grafana
-- Services : ClusterIP pour backend, LoadBalancer pour client/Grafana/Prometheus
+- Un gateway Nginx exposé publiquement en `LoadBalancer`, sans Ingress
+- Des services internes `backend`, `auth` et `client` en `ClusterIP`
+- Deux branches Redis internes : `redis-task` et `redis-auth`
+- Prometheus et Grafana pour l'observabilité
 
 **4) Vérifier que tout est déployé**
 
@@ -275,8 +286,12 @@ kubectl get all -n todo-app
 ```
 
 Vérifier que :
-- `backend-deployment`: `2/2 Ready`
-- `client-deployment`: `2/2 Ready`
+- `gateway-deployment`: `1/1 Ready`
+- `backend-deployment`: `1/1 Ready`
+- `auth-deployment`: `1/1 Ready`
+- `client-deployment`: `1/1 Ready`
+- `redis-task-deployment`: `1/1 Ready`
+- `redis-auth-deployment`: `1/1 Ready`
 - Tous les pods sont `Running` avec 0 restarts
 
 ```powershell
@@ -285,25 +300,30 @@ kubectl get pods -n todo-app
 
 **5) Accéder à l'application**
 
-**Option A : Via LoadBalancer (recommandé)**
+Le cluster n'utilise pas d'Ingress. Le point d'entrée public est le `Service` `gateway` :
 
 ```powershell
-kubectl get svc client-service -n todo-app
+kubectl get svc gateway -n todo-app
 ```
 
-L'EXTERNAL-IP sera `172.19.0.6` (ou similaire). Allez sur :
-- **Frontend** : http://172.19.0.6:5173
-- **Grafana** : http://172.19.0.5:3001
-- **Prometheus** : http://172.19.0.7:9090
+Selon l'environnement local, l'`EXTERNAL-IP` sera soit une IP Docker Desktop, soit `localhost`.
+
+URLs utiles :
+- **Gateway HTTP** : `http://<EXTERNAL-IP>:8080`
+- **Gateway HTTPS** : `https://<EXTERNAL-IP>:8443`
+- **Grafana** : `http://<EXTERNAL-IP-GRAFANA>:3001`
+- **Prometheus** : `http://<EXTERNAL-IP-PROMETHEUS>:9090`
+
+Routage exposé par le gateway :
+- `/` -> client Vite
+- `/api/auth/*` -> microservice `auth`
+- `/api/*` -> service `backend`
 
 **Option B : Via port-forward (si LoadBalancer ne marche pas)**
 
 ```powershell
-# Frontend
-kubectl port-forward svc/client-service 5173:5173 -n todo-app
-
-# Backend
-kubectl port-forward svc/backend-service 3000:3000 -n todo-app
+# Gateway
+kubectl port-forward svc/gateway 8080:8080 8443:8443 -n todo-app
 
 # Grafana
 kubectl port-forward svc/grafana-service 3001:3001 -n todo-app
@@ -313,19 +333,27 @@ kubectl port-forward svc/prometheus-service 9090:9090 -n todo-app
 ```
 
 Puis allez sur :
-- **Frontend** : http://localhost:5173
-- **Backend health** : http://localhost:3000/health
+- **Gateway HTTP** : http://localhost:8080
+- **Gateway HTTPS** : https://localhost:8443
 - **Grafana** : http://localhost:3001
 - **Prometheus** : http://localhost:9090
+
+Comme en Docker Compose, le certificat TLS du gateway est auto-signé et généré au démarrage. Le navigateur affichera donc un avertissement au premier accès en `https`.
 
 **6) Vérifier les logs**
 
 ```powershell
-# Logs du client (suivi en temps réel)
+# Logs du gateway
+kubectl logs -f -l app=gateway -n todo-app
+
+# Logs du client
 kubectl logs -f -l app=client -n todo-app
 
 # Logs du backend
 kubectl logs -f -l app=backend -n todo-app
+
+# Logs de l'auth
+kubectl logs -f -l app=auth -n todo-app
 
 # Détails d'un pod spécifique
 kubectl describe pod <pod-name> -n todo-app
@@ -342,8 +370,9 @@ kubectl delete namespace todo-app
 | Aspect | Configuration |
 |--------|---------------|
 | **Health probes** | initialDelaySeconds: 40 pour Vite (démarrage lent) |
-| **Proxy API** | `VITE_PROXY_TARGET=http://backend-service:3000` |
-| **Service discovery** | Utiliser `backend-service:3000` (DNS interne) |
+| **Entrée publique** | `Service` `gateway` en `LoadBalancer`, sans Ingress |
+| **Proxy API client** | `VITE_PROXY_TARGET=http://backend:3000` et `VITE_AUTH_PROXY_TARGET=http://auth:3001` |
+| **Service discovery** | Utiliser `backend:3000`, `auth:3001`, `client:5173`, `redis-task:6379`, `redis-auth:6379` |
 | **LoadBalancer IP** | Docker Desktop attribue une IP interne (172.19.x.x) |
 | **Images Docker** | Doivent être présentes localement ou sur un registry |
 
