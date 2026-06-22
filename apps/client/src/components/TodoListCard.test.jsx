@@ -134,9 +134,9 @@ describe('TodoListCard', () => {
 
         expect(container.textContent).toContain('Added item');
 
-        const removeAddedButton = [...container.querySelectorAll('button')].find(
-            (button) => button.textContent === 'Remove Added item',
-        );
+        const removeAddedButton = [
+            ...container.querySelectorAll('button'),
+        ].find((button) => button.textContent === 'Remove Added item');
 
         await act(async () => {
             removeAddedButton.click();
