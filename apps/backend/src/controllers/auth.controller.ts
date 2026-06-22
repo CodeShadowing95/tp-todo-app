@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db, users } from 'db';
+import { authDb, users } from 'db';
 import { eq } from 'drizzle-orm';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
@@ -21,7 +21,7 @@ class AuthController {
             return;
         }
 
-        const existing = await db
+        const existing = await authDb
             .select({ id: users.id })
             .from(users)
             .where(eq(users.email, email))
@@ -36,7 +36,7 @@ class AuthController {
 
         const passwordHash = await bcrypt.hash(password, 10);
 
-        const rows = await db
+        const rows = await authDb
             .insert(users)
             .values({ email, passwordHash })
             .returning();
@@ -59,7 +59,7 @@ class AuthController {
             return;
         }
 
-        const [user] = await db
+        const [user] = await authDb
             .select()
             .from(users)
             .where(eq(users.email, email))

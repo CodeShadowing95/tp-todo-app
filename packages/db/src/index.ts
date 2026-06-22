@@ -1,6 +1,6 @@
-// Database client
-export { db } from './client'
-export type { DB } from './client'
+// Database clients
+export { authDb, db } from './client'
+export type { AuthDB, DB } from './client'
 
 // Schemas
 export * from './schemas/auth'

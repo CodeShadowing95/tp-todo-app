@@ -167,12 +167,14 @@ npm install
 ```env
 NODE_ENV=development
 DATABASE_URL=postgresql://<user>:<password>@<host>:5432/<db>?sslmode=require
+AUTH_DATABASE_URL=postgresql://<user>:<password>@<host>:5432/<auth_db>?sslmode=require
 JWT_SECRET=change-me
 ```
 
 3) Appliquer les migrations (à faire une fois)
 ```bash
 DATABASE_URL="postgresql://..." npm run migrate --workspace=db
+AUTH_DATABASE_URL="postgresql://..." npm run migrate:auth --workspace=db
 ```
 
 4) Lancer le backend (terminal 1)

@@ -10,7 +10,7 @@ const mockValues = jest.fn();
 const mockReturning = jest.fn();
 
 jest.mock('db', () => ({
-    db: {
+    authDb: {
         select: (...args: unknown[]) => {
             mockSelect(...args);
             return { from: mockFrom };
