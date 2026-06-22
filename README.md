@@ -9,7 +9,7 @@ Application Todo full-stack en monorepo (client + API) avec observabilité (Prom
 - Git
 - Docker + Docker Compose (Docker Desktop recommandé)
 - Node.js (idéalement 20+) et npm
-- Ports disponibles : `5173`, `3000`, `9090`, `3001`
+- Ports disponibles : `8080`, `8443`, `9091`, `3003`
 
 Optionnel (utile si vous lancez des scripts en local hors Docker) :
 
@@ -23,17 +23,21 @@ git clone https://github.com/CodeShadowing95/tp-todo-app
 cd tp-todo-app
 ```
 
-Créer 2 fichiers `.env` :
+Créer 3 fichiers `.env` :
 
 - `.env` (root) : utilisé par les outils du monorepo (ex: scripts DB/migrations).
-- `apps/backend/.env` : utilisé par l’API au démarrage (auth + accès DB).
+- `apps/backend/.env` : utilisé par le service `backend`.
+- `apps/auth/.env` : utilisé par le microservice `auth`.
 
 Copiez-collez ces valeurs dans ces fichiers `.env`:
 ```bash
 NODE_ENV=development
 
-# Database
+# Backend database
 DATABASE_URL=<your-neon-database-url>
+
+# Auth database
+AUTH_DATABASE_URL=<your-neon-auth-database-url>
 
 # Auth
 JWT_SECRET=<your-secret-key>
@@ -45,7 +49,7 @@ Pour générer un secret JWT, vous pouvez utiliser la commande suivante :
 openssl rand -hex 32
 ```
 
-le code généré est votre secret JWT. Vous pouvez le copier dans le fichier `.env` de `apps/backend/.env` et dans `.env` (root).
+Le code généré est votre secret JWT. Utilisez la même valeur dans `.env`, `apps/backend/.env` et `apps/auth/.env`.
 
 ## Démarrer l’application (Docker Compose)
 
@@ -55,15 +59,17 @@ Depuis la racine du projet :
 docker compose up --build
 ```
 
-Lance tous les services (backend, auth, client, prometheus, grafana).
+Lance tous les services (gateway, backend, auth, client, redis-task, redis-auth, prometheus, grafana).
 
 ### Services & URLs
 
 | Service | Conteneur | URL |
 | --- | --- | --- |
-| Frontend (Vite) | `todo_client` | http://localhost:5180/ |
-| Backend (API) | `todo_backend` | http://localhost:3000/health |
-| Auth (API) | `todo_auth` | http://localhost:3002/health |
+| Gateway HTTP | `todo_gateway` | http://localhost:8080/ |
+| Gateway HTTPS | `todo_gateway` | https://localhost:8443/ |
+| Frontend (via gateway) | `todo_gateway` | https://localhost:8443/ |
+| Backend (interne) | `todo_backend` | http://backend:3000/health |
+| Auth (interne) | `todo_auth` | http://auth:3001/health |
 | Prometheus | `todo_prometheus` | http://localhost:9091/ |
 | Grafana | `todo_grafana` | http://localhost:3003/ |
 
@@ -77,21 +83,24 @@ docker compose ps
 
 Points de contrôle :
 
+- `todo_gateway` doit être en état `healthy`.
 - `todo_backend` doit être en état `healthy` (healthcheck via `GET /health`).
-- `todo_client` n’a pas de healthcheck Docker par défaut : vérifiez qu’il est `Up` et que l’URL répond.
+- `todo_auth` doit être en état `healthy`.
+- `todo_client` doit être `healthy` avant que le gateway ne soit complètement disponible.
 
 Vérifications rapides :
 
 ```bash
-curl -i http://localhost:3000/health
-curl -i http://localhost:5180/
+curl -i http://localhost:8080/health
+curl -k -i https://localhost:8443/health
+curl -k -i https://localhost:8443/
 ```
 
 ## Accéder à l’application
 
 Ouvrir :
 
-- http://localhost:5180/
+- https://localhost:8443/
 
 Le formulaire de connexion doit s’afficher.
 
@@ -109,9 +118,11 @@ Après connexion, vous serez redirigé vers la page de gestion : création et ad
 # TP Todo App — Onboarding (FR)
 
 Application composée de:
-- Frontend React (Vite) : http://localhost:5173
-- Backend Node/Express : http://localhost:3000
-- Healthcheck backend : http://localhost:3000/health
+- Gateway Nginx : https://localhost:8443
+- Frontend React (Vite) derrière le gateway
+- Backend Node/Express derrière le gateway
+- Microservice auth derrière le gateway
+- Deux branches Redis distinctes : `redis-task` et `redis-auth`
 
 ## Lancer avec Docker (recommandé)
 
@@ -139,8 +150,17 @@ docker compose run --rm auth npm run migrate:auth --workspace=db
 ```
 
 5) Ouvrir l’application
-- Frontend : http://localhost:5180
-- Backend (optionnel) : http://localhost:3000/health
+- Gateway HTTPS : https://localhost:8443
+- Gateway HTTP : http://localhost:8080
+- Prometheus : http://localhost:9091
+- Grafana : http://localhost:3003
+
+Le gateway sert d’entrée publique unique:
+- `/` -> client Vite
+- `/api/auth/*` -> microservice `auth`
+- `/api/*` -> service `backend`
+
+Le certificat TLS est auto-généré au démarrage pour le local, donc le navigateur affichera un avertissement de certificat auto-signé au premier accès.
 
 ### Arrêter
 ```bash
@@ -152,6 +172,7 @@ docker compose down
 docker compose logs -f backend
 docker compose logs -f auth
 docker compose logs -f client
+docker compose logs -f gateway
 ```
 
 ## Lancer sans Docker
@@ -328,7 +349,7 @@ kubectl delete namespace todo-app
 
 ## Dépannage rapide
 
-- Si l'inscription/login affiche "Network error" en Docker: vérifier que les conteneurs `backend` et `client` tournent (`docker compose ps`) puis relancer `docker compose up -d --build`.
+- Si l'inscription/login affiche "Network error" en Docker: vérifier que `gateway`, `backend`, `auth` et `client` tournent (`docker compose ps`) puis relancer `docker compose up -d --build`.
 - Si l'auth renvoie une erreur serveur (500) au premier lancement: la base n'est probablement pas migrée → rejouer la commande de migration.
 - En Kubernetes, si les pods crashent (`0/1 Running`): vérifier les logs avec `kubectl logs -f <pod-name> -n todo-app`
 - Si le proxy API ne fonctionne pas: vérifier que `VITE_PROXY_TARGET` est bien configuré dans la ConfigMap (`kubectl get configmap app-config -n todo-app -o yaml`)
