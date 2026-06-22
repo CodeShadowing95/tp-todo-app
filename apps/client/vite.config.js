@@ -6,12 +6,16 @@ export default defineConfig({
     plugins: [react()],
     server: {
         proxy: {
-            '/api': {
-                target: process.env.VITE_PROXY_TARGET || 'http://localhost:3000',
+            '/api/auth': {
+                target:
+                    process.env.VITE_AUTH_PROXY_TARGET ||
+                    'http://localhost:3001',
                 changeOrigin: true,
-                pathRewrite: {
-                    '^/api': '',
-                },
+            },
+            '/api': {
+                target:
+                    process.env.VITE_PROXY_TARGET || 'http://localhost:3000',
+                changeOrigin: true,
             },
         },
     },
