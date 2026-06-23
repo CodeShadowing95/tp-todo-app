@@ -3,11 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { authDb, users } from 'db';
 import { eq } from 'drizzle-orm';
-import {
-    deleteCachedKeys,
-    getCachedJson,
-    setCachedJson,
-} from '../utils/cache';
+import { deleteCachedKeys, getCachedJson, setCachedJson } from '../utils/cache';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
 const USER_CACHE_TTL_SECONDS = 300;
