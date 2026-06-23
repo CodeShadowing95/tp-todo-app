@@ -70,7 +70,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
       - name: Build image
-        run: docker build -t todo-${{ matrix.image_name }}:scan -f ${{ matrix.dockerfile }} ${{ matrix.context }}
+        run: docker build --pull -t todo-${{ matrix.image_name }}:scan -f ${{ matrix.dockerfile }} ${{ matrix.context }}
 
       - name: Trivy image scan summary
         uses: aquasecurity/trivy-action@v0.36.0
