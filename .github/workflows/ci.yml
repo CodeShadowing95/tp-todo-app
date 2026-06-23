@@ -4,6 +4,75 @@ env:
   FORCE_COLOR: 2
 
 jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
+
+  trivy-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image_name: backend
+            dockerfile: apps/backend/Dockerfile
+            context: .
+          - image_name: auth
+            dockerfile: apps/auth/Dockerfile
+            context: .
+          - image_name: client
+            dockerfile: apps/client/Dockerfile
+            context: apps/client
+          - image_name: gateway
+            dockerfile: gateway/Dockerfile
+            context: .
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Build image
+        run: docker build -t todo-${{ matrix.image_name }}:scan -f ${{ matrix.dockerfile }} ${{ matrix.context }}
+
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: todo-${{ matrix.image_name }}:scan
+          format: sarif
+          output: trivy-image-results.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+
+      - name: Upload Trivy image SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-image-results.sarif
+          category: trivy-image-${{ matrix.image_name }}
+
   ci-backend:
     runs-on: ubuntu-latest
     steps:

@@ -2,6 +2,21 @@
 
 Application Todo full-stack en monorepo (client + API) avec observabilité (Prometheus/Grafana).
 
+## Securite
+
+La CI GitHub Actions lance egalement des scans de vulnerabilites avec Trivy :
+
+- un scan du depot en mode filesystem pour les dependances et l'infrastructure as code ;
+- un scan des images Docker construites pour `backend`, `auth`, `client` et `gateway`.
+
+Les alertes `HIGH` et `CRITICAL` sont publiees dans l'onglet Security de GitHub via des rapports SARIF.
+
+Exemple de verification locale :
+
+```bash
+trivy fs --severity HIGH,CRITICAL .
+```
+
 ## Pré-requis
 
 À avoir sur votre machine :
