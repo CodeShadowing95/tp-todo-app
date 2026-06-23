@@ -1,0 +1,69 @@
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+RUN apk upgrade --no-cache \
+    && apk add --no-cache python3 make g++ libc6-compat
+
+COPY package*.json ./
+COPY apps/auth/package.json ./apps/auth/
+COPY apps/backend/package.json ./apps/backend/
+COPY apps/client/package.json ./apps/client/
+COPY packages/config/package.json ./packages/config/
+COPY packages/config/tsconfig ./packages/config/tsconfig
+COPY packages/db/package.json ./packages/db/
+
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 120000 \
+    && npm ci
+
+COPY packages/db/ ./packages/db/
+COPY apps/auth/ ./apps/auth/
+
+RUN npm run build --workspace=db
+
+FROM node:20-alpine AS deps
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+RUN apk upgrade --no-cache \
+    && apk add --no-cache libc6-compat
+
+COPY package*.json ./
+COPY apps/auth/package.json ./apps/auth/
+COPY apps/backend/package.json ./apps/backend/
+COPY apps/client/package.json ./apps/client/
+COPY packages/config/package.json ./packages/config/
+COPY packages/config/tsconfig ./packages/config/tsconfig
+COPY packages/db/package.json ./packages/db/
+
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 120000 \
+    && npm ci --omit=dev --workspace=packages/db --workspace=apps/auth --include-workspace-root=false \
+    && npm install --no-save tsx@4.21.0 \
+    && rm -f package.json package-lock.json \
+    && rm -f apps/auth/package.json apps/backend/package.json apps/client/package.json \
+    && rm -f packages/config/package.json
+
+COPY --from=build /app/packages/db/dist ./packages/db/dist
+COPY packages/config/tsconfig ./packages/config/tsconfig
+COPY apps/auth/src ./apps/auth/src
+COPY apps/auth/tsconfig.json ./apps/auth/tsconfig.json
+
+FROM alpine:3.21 AS runtime
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+RUN apk upgrade --no-cache \
+    && apk add --no-cache libc6-compat libstdc++
+
+COPY --from=deps /usr/local/bin/node /usr/local/bin/node
+COPY --from=deps /app /app
+
+EXPOSE 3001
+
+CMD ["node", "node_modules/tsx/dist/cli.mjs", "-r", "dotenv/config", "apps/auth/src/index.ts"]

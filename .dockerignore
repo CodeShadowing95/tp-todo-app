@@ -4,4 +4,7 @@ node_modules
 npm-debug.log
 apps/backend/dist
 apps/backend/coverage
-apps/client
+apps/auth/dist
+apps/client/dist
+packages/db/dist
+trivy-*.json

@@ -55,14 +55,14 @@ jobs:
       matrix:
         include:
           - image_name: backend
-            dockerfile: apps/backend/Dockerfile
+            dockerfile: apps/backend/Dockerfile.scan
             context: .
           - image_name: auth
-            dockerfile: apps/auth/Dockerfile
+            dockerfile: apps/auth/Dockerfile.scan
             context: .
           - image_name: client
-            dockerfile: apps/client/Dockerfile
-            context: apps/client
+            dockerfile: apps/client/Dockerfile.scan
+            context: .
           - image_name: gateway
             dockerfile: gateway/Dockerfile
             context: .

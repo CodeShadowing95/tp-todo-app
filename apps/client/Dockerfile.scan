@@ -1,0 +1,29 @@
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+RUN apk upgrade --no-cache
+
+COPY package*.json ./
+COPY apps/auth/package.json ./apps/auth/
+COPY apps/backend/package.json ./apps/backend/
+COPY apps/client/package.json ./apps/client/
+COPY packages/config/package.json ./packages/config/
+COPY packages/db/package.json ./packages/db/
+
+RUN npm ci --workspace=apps/client --include-workspace-root=false
+
+COPY apps/client/ ./apps/client/
+
+WORKDIR /app/apps/client
+RUN npm run build
+
+FROM nginx:1.27-alpine AS runtime
+
+RUN apk upgrade --no-cache
+
+COPY --from=build /app/apps/client/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

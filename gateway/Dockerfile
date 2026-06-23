@@ -1,6 +1,7 @@
 FROM nginx:1.27-alpine
 
-RUN apk add --no-cache openssl
+RUN apk upgrade --no-cache \
+    && apk add --no-cache openssl
 
 COPY gateway/nginx.conf /etc/nginx/nginx.conf
 COPY gateway/default.conf /etc/nginx/conf.d/default.conf
