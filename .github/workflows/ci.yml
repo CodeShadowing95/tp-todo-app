@@ -137,16 +137,21 @@ jobs:
           exit-code: 0
 
       - name: Trivy image scan SARIF
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: todo-${{ matrix.image_name }}:scan
-          format: sarif
-          output: trivy-image-results.sarif
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          scanners: vuln
-          hide-progress: true
-          exit-code: 1
+        shell: bash
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD:/work" \
+            -w /work \
+            aquasec/trivy:0.70.0 image \
+            --format sarif \
+            --output trivy-image-results.sarif \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --scanners vuln \
+            --skip-version-check \
+            --exit-code 1 \
+            todo-${{ matrix.image_name }}:scan
 
       - name: Upload Trivy image SARIF
         if: always()
