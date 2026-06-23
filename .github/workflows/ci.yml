@@ -12,7 +12,20 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
-      - name: Trivy filesystem scan
+      - name: Trivy filesystem scan summary
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          scanners: vuln
+          hide-progress: true
+          skip-dirs: .terraform,node_modules
+          exit-code: 0
+
+      - name: Trivy filesystem scan SARIF
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
@@ -21,6 +34,9 @@ jobs:
           output: trivy-results.sarif
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+          scanners: vuln
+          hide-progress: true
+          skip-dirs: .terraform,node_modules
           exit-code: 1
 
       - name: Upload Trivy SARIF
@@ -56,7 +72,18 @@ jobs:
       - name: Build image
         run: docker build -t todo-${{ matrix.image_name }}:scan -f ${{ matrix.dockerfile }} ${{ matrix.context }}
 
-      - name: Trivy image scan
+      - name: Trivy image scan summary
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: todo-${{ matrix.image_name }}:scan
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          scanners: vuln
+          hide-progress: true
+          exit-code: 0
+
+      - name: Trivy image scan SARIF
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: todo-${{ matrix.image_name }}:scan
@@ -64,6 +91,8 @@ jobs:
           output: trivy-image-results.sarif
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+          scanners: vuln
+          hide-progress: true
           exit-code: 1
 
       - name: Upload Trivy image SARIF
