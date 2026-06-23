@@ -4,7 +4,7 @@ metadata:
   name: backend-deployment
   namespace: todo-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -17,7 +17,7 @@ spec:
       containers:
       - name: backend
         image: todo-backend:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
           name: http
@@ -27,7 +27,14 @@ spec:
             secretKeyRef:
               name: app-secrets
               key: DATABASE_URL
-        - name: BACKEND_PORT
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JWT_SECRET
+        - name: REDIS_URL
+          value: redis://redis-task:6379
+        - name: PORT
           valueFrom:
             configMapKeyRef:
               name: app-config

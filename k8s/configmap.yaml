@@ -4,11 +4,11 @@ metadata:
   name: app-config
   namespace: todo-app
 data:
-  # Backend configuration
-  BACKEND_PORT: "3000"
+  # Runtime configuration
   NODE_ENV: production
-  
-  # Client configuration
-  # Vite proxy target for API calls (use K8s internal DNS)
-  VITE_PROXY_TARGET: http://backend-service:3000
-  REACT_APP_API_URL: http://localhost:3000
+  BACKEND_PORT: "3000"
+  AUTH_PORT: "3001"
+
+  # Client dev-server proxy targets (K8s internal DNS)
+  VITE_PROXY_TARGET: http://backend:3000
+  VITE_AUTH_PROXY_TARGET: http://auth:3001

@@ -10,10 +10,15 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "lint": "npx eslint src --ext .ts",
-    "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate",
-    "push": "drizzle-kit push",
-    "studio": "drizzle-kit studio",
+    "generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "generate:auth": "drizzle-kit generate --config=drizzle.auth.config.ts",
+    "generate:all": "npm run generate && npm run generate:auth",
+    "migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "migrate:auth": "drizzle-kit migrate --config=drizzle.auth.config.ts",
+    "migrate:all": "npm run migrate && npm run migrate:auth",
+    "push": "drizzle-kit push --config=drizzle.config.ts",
+    "push:auth": "drizzle-kit push --config=drizzle.auth.config.ts",
+    "studio": "drizzle-kit studio --config=drizzle.config.ts",
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {

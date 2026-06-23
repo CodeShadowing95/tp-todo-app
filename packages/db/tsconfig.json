@@ -6,6 +6,6 @@
     "module": "CommonJS",
     "moduleResolution": "Node"
   },
-  "include": ["src/**/*.ts", "drizzle.config.ts"],
+  "include": ["src/**/*.ts", "drizzle.config.ts", "drizzle.auth.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
