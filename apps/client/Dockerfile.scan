@@ -20,10 +20,19 @@ RUN npm run build
 
 FROM nginx:1.27-alpine AS runtime
 
-RUN apk upgrade --no-cache
+RUN apk upgrade --no-cache \
+    && addgroup -g 1001 -S app \
+    && adduser -S -D -H -u 1001 -G app app \
+    && touch /var/run/nginx.pid \
+    && chown app:app /var/run/nginx.pid \
+    && chown -R app:app /var/cache/nginx /etc/nginx/conf.d \
+    && sed -i '/^user /d' /etc/nginx/nginx.conf \
+    && sed -i 's/listen       80;/listen       8080;/' /etc/nginx/conf.d/default.conf
 
-COPY --from=build /app/apps/client/dist /usr/share/nginx/html
+COPY --from=build --chown=app:app /app/apps/client/dist /usr/share/nginx/html
 
-EXPOSE 80
+USER app
+
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]

@@ -59,10 +59,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 RUN apk upgrade --no-cache \
-    && apk add --no-cache libc6-compat libstdc++
+    && apk add --no-cache libc6-compat libstdc++ \
+    && addgroup -g 1001 -S app \
+    && adduser -S -D -H -u 1001 -G app app
 
 COPY --from=deps /usr/local/bin/node /usr/local/bin/node
-COPY --from=deps /app /app
+COPY --from=deps --chown=app:app /app /app
+
+USER app
 
 EXPOSE 3001
 

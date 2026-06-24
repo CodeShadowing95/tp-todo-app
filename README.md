@@ -9,6 +9,11 @@ La CI GitHub Actions lance egalement des scans de vulnerabilites avec Trivy :
 - un scan du depot en mode filesystem pour les dependances et l'infrastructure as code ;
 - un scan des images Docker construites pour `backend`, `auth`, `client` et `gateway`.
 
+Pour les services `backend`, `auth` et `client`, le depot distingue :
+
+- les images applicatives standard basees sur `Dockerfile`, utilisees pour le developpement ou le deploiement local ;
+- les images de scan CI basees sur `Dockerfile.scan`, durcies pour la CI et les controles Trivy.
+
 Les alertes `HIGH` et `CRITICAL` sont publiees dans l'onglet Security de GitHub via des rapports SARIF.
 
 Exemple de verification locale :
@@ -261,14 +266,31 @@ cd C:\Users\ukisu\Documents\tp-todo-app
 # Backend
 docker build -t todo-backend:latest -f apps/backend/Dockerfile .
 
+# Backend scan CI
+docker build -t todo-backend:scan -f apps/backend/Dockerfile.scan .
+
 # Auth
 docker build -t todo-auth:latest -f apps/auth/Dockerfile .
+
+# Auth scan CI
+docker build -t todo-auth:scan -f apps/auth/Dockerfile.scan .
 
 # Frontend
 docker build -t todo-client:latest -f apps/client/Dockerfile apps/client
 
+# Frontend scan CI
+docker build -t todo-client:scan -f apps/client/Dockerfile.scan .
+
 # Gateway
 docker build -t todo-gateway:latest -f gateway/Dockerfile .
+```
+
+Les images de scan CI basees sur `Dockerfile.scan` sont concues pour la CI et les scans de securite. Elles peuvent differer des images applicatives standard sur la base utilisee, les paquets installes, l'utilisateur runtime et le port expose.
+
+Pour l'image de scan CI `apps/client/Dockerfile.scan`, Nginx tourne en utilisateur non root et ecoute sur le port `8080`.
+
+```bash
+docker run --rm -p 8080:8080 todo-client:scan
 ```
 
 **2) Configurer les secrets Kubernetes**

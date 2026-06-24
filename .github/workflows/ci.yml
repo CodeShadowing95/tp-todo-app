@@ -75,6 +75,26 @@ jobs:
       - name: Build image
         run: docker buildx build --pull --load -t todo-${{ matrix.image_name }}:scan -f ${{ matrix.dockerfile }} ${{ matrix.context }}
 
+      - name: Smoke test client scan image
+        if: matrix.image_name == 'client'
+        shell: bash
+        run: |
+          cid="$(docker run -d -p 18080:8080 todo-${{ matrix.image_name }}:scan)"
+          cleanup() {
+            docker rm -f "$cid" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          for _ in {1..15}; do
+            if curl -fsS http://127.0.0.1:18080/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs "$cid"
+          exit 1
+
       - name: Trivy image scan summary
         uses: aquasecurity/trivy-action@v0.36.0
         with:
