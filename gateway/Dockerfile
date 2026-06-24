@@ -7,6 +7,8 @@ COPY gateway/nginx.conf /etc/nginx/nginx.conf
 COPY gateway/default.conf /etc/nginx/conf.d/default.conf
 COPY gateway/entrypoint.sh /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh && mkdir -p /etc/nginx/certs
+RUN sed -i 's/\r$//' /entrypoint.sh \
+    && chmod +x /entrypoint.sh \
+    && mkdir -p /etc/nginx/certs
 
 ENTRYPOINT ["/entrypoint.sh"]

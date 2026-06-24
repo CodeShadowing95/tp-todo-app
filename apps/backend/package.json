@@ -3,15 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx -r dotenv/config -r tsconfig-paths/register src/index.ts",
+    "dev": "tsx -r dotenv/config -r tsconfig-paths/register -r ./src/tracing.ts src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node -r ./dist/tracing.js dist/index.js",
     "format": "prettier --write \"{src,spec}/**/*.{ts,js}\"",
     "format-check": "prettier --check \"{src,spec}/**/*.{ts,js}\"",
     "test": "jest --detectOpenHandles --forceExit",
     "test:coverage": "jest --coverage --runInBand --forceExit"
   },
   "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "latest",
+    "@opentelemetry/exporter-trace-otlp-proto": "latest",
+    "@opentelemetry/sdk-node": "latest",
     "@types/jsonwebtoken": "^9.0.10",
     "db": "1.0.0",
     "dotenv": "^17.4.2",

@@ -1,0 +1,63 @@
+services:
+  backend:
+    environment:
+      - OTEL_SERVICE_NAME=backend
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger:4318/v1/traces
+
+  auth:
+    environment:
+      - OTEL_SERVICE_NAME=auth
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger:4318/v1/traces
+
+  prometheus:
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+      - jaeger
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: todo_loki
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/config.yml"]
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki/config.yml:/etc/loki/config.yml:ro
+      - loki_data:/loki
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: todo_promtail
+    restart: unless-stopped
+    command: ["-config.file=/etc/promtail/config.yml"]
+    depends_on:
+      - loki
+    volumes:
+      - ./observability/promtail/config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    container_name: todo_jaeger
+    restart: unless-stopped
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+
+volumes:
+  grafana_data:
+  loki_data:
