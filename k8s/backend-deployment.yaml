@@ -44,6 +44,18 @@ spec:
             configMapKeyRef:
               name: app-config
               key: NODE_ENV
+        - name: OTEL_SERVICE_NAME
+          value: backend
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: OTEL_EXPORTER_OTLP_PROTOCOL
+        - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
         resources:
           requests:
             memory: "256Mi"

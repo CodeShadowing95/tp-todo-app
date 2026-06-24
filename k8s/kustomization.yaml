@@ -22,6 +22,14 @@ resources:
   - prometheus-configmap.yaml
   - prometheus-deployment.yaml
   - prometheus-service.yaml
+  - loki-configmap.yaml
+  - loki-deployment.yaml
+  - loki-service.yaml
+  - promtail-configmap.yaml
+  - promtail-rbac.yaml
+  - promtail-daemonset.yaml
+  - jaeger-deployment.yaml
+  - jaeger-service.yaml
   - grafana-provisioning-configmap.yaml
   - grafana-dashboard-configmap.yaml
   - grafana-deployment.yaml

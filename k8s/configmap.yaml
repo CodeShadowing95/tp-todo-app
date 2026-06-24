@@ -8,6 +8,8 @@ data:
   NODE_ENV: production
   BACKEND_PORT: "3000"
   AUTH_PORT: "3001"
+  OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://jaeger-service:4318/v1/traces
 
   # Client dev-server proxy targets (K8s internal DNS)
   VITE_PROXY_TARGET: http://backend:3000

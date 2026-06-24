@@ -314,7 +314,9 @@ Cela crée :
 - Un gateway Nginx exposé publiquement en `LoadBalancer`, sans Ingress
 - Des services internes `backend`, `auth` et `client` en `ClusterIP`
 - Deux branches Redis internes : `redis-task` et `redis-auth`
-- Prometheus et Grafana pour l'observabilité
+- Prometheus et Grafana pour les métriques et dashboards
+- Loki + Promtail pour la collecte centralisée des logs des pods
+- Jaeger pour recevoir les traces OTLP envoyées par `backend` et `auth`
 
 **4) Vérifier que tout est déployé**
 
@@ -329,6 +331,8 @@ Vérifier que :
 - `client-deployment`: `1/1 Ready`
 - `redis-task-deployment`: `1/1 Ready`
 - `redis-auth-deployment`: `1/1 Ready`
+- `prometheus-deployment`, `grafana-deployment`, `loki-deployment` et `jaeger-deployment`: `1/1 Ready`
+- Le DaemonSet `promtail` doit avoir au moins un pod `Ready`
 - Tous les pods sont `Running` avec 0 restarts
 
 ```powershell
@@ -351,6 +355,11 @@ URLs utiles :
 - **Grafana** : `http://<EXTERNAL-IP-GRAFANA>:3001`
 - **Prometheus** : `http://<EXTERNAL-IP-PROMETHEUS>:9090`
 
+Services internes d'observabilité :
+- **Loki** : `http://loki-service:3100`
+- **Jaeger UI** : `http://jaeger-service:16686`
+- **OTLP HTTP** : `http://jaeger-service:4318/v1/traces`
+
 Routage exposé par le gateway :
 - `/` -> client Vite
 - `/api/auth/*` -> microservice `auth`
@@ -367,6 +376,9 @@ kubectl port-forward svc/grafana-service 3001:3001 -n todo-app
 
 # Prometheus
 kubectl port-forward svc/prometheus-service 9090:9090 -n todo-app
+
+# Jaeger UI
+kubectl port-forward svc/jaeger-service 16686:16686 -n todo-app
 ```
 
 Puis allez sur :
@@ -374,6 +386,7 @@ Puis allez sur :
 - **Gateway HTTPS** : https://localhost:8443
 - **Grafana** : http://localhost:3001
 - **Prometheus** : http://localhost:9090
+- **Jaeger UI** : http://localhost:16686
 
 Comme en Docker Compose, le certificat TLS du gateway est auto-signé et généré au démarrage. Le navigateur affichera donc un avertissement au premier accès en `https`.
 
@@ -409,7 +422,9 @@ kubectl delete namespace todo-app
 | **Health probes** | initialDelaySeconds: 40 pour Vite (démarrage lent) |
 | **Entrée publique** | `Service` `gateway` en `LoadBalancer`, sans Ingress |
 | **Proxy API client** | `VITE_PROXY_TARGET=http://backend:3000` et `VITE_AUTH_PROXY_TARGET=http://auth:3001` |
-| **Service discovery** | Utiliser `backend:3000`, `auth:3001`, `client:5173`, `redis-task:6379`, `redis-auth:6379` |
+| **Service discovery** | Utiliser `backend:3000`, `auth:3001`, `client:5173`, `redis-task:6379`, `redis-auth:6379`, `loki-service:3100`, `jaeger-service:4318` |
+| **Tracing OTEL** | `backend` et `auth` exportent leurs traces vers `http://jaeger-service:4318/v1/traces` |
+| **Logs centralisés** | `promtail` collecte les logs des pods Kubernetes et les envoie vers `loki-service` |
 | **LoadBalancer IP** | Docker Desktop attribue une IP interne (172.19.x.x) |
 | **Images Docker** | Doivent être présentes localement ou sur un registry |
 
@@ -419,4 +434,5 @@ kubectl delete namespace todo-app
 - Si l'auth renvoie une erreur serveur (500) au premier lancement: la base n'est probablement pas migrée → rejouer la commande de migration.
 - En Kubernetes, si les pods crashent (`0/1 Running`): vérifier les logs avec `kubectl logs -f <pod-name> -n todo-app`
 - Si le proxy API ne fonctionne pas: vérifier que `VITE_PROXY_TARGET` est bien configuré dans la ConfigMap (`kubectl get configmap app-config -n todo-app -o yaml`)
+- Si Grafana n'affiche pas les logs ou traces: vérifier que `loki-deployment`, `jaeger-deployment` et le DaemonSet `promtail` sont `Ready`
 - LoadBalancer ne répond pas ? Utilisez `kubectl port-forward` à la place.
