@@ -32,6 +32,18 @@ coverage/
 # Audit report
 AUDIT.md
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+*.auto.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+crash.log
+
 # Other
 example
-azure/

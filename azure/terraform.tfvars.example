@@ -1,0 +1,19 @@
+subscription_id         = "00000000-0000-0000-0000-000000000000"
+tenant_id               = "00000000-0000-0000-0000-000000000000"
+project_name            = "todoapp"
+resource_group_location = "germanywestcentral"
+resource_group_prefix   = "rg-todo"
+acr_sku                 = "Basic"
+aks_name                = "todo-aks"
+dns_prefix              = "todo-aks"
+kubernetes_version      = ""
+node_count              = 1
+node_vm_size            = "Standard_B2s"
+node_os_disk_size_gb    = 64
+automatic_upgrade_channel = "patch"
+aks_sku_tier            = "Free"
+
+tags = {
+  environment = "production"
+  owner       = "todo-team"
+}
