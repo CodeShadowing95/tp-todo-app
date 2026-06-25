@@ -41,3 +41,71 @@ data:
               - __meta_kubernetes_pod_uid
               - __meta_kubernetes_pod_container_name
             target_label: __path__
+      - job_name: todo-app-static
+        pipeline_stages:
+          - cri: {}
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: todo-app-static
+              namespace: todo-app
+              app: backend
+              service_name: backend
+              __path__: /var/log/pods/todo-app_backend-deployment-*/*/*.log
+          - targets:
+              - localhost
+            labels:
+              job: todo-app-static
+              namespace: todo-app
+              app: auth
+              service_name: auth
+              __path__: /var/log/pods/todo-app_auth-deployment-*/*/*.log
+          - targets:
+              - localhost
+            labels:
+              job: todo-app-static
+              namespace: todo-app
+              app: gateway
+              service_name: gateway
+              __path__: /var/log/pods/todo-app_gateway-deployment-*/*/*.log
+          - targets:
+              - localhost
+            labels:
+              job: todo-app-static
+              namespace: todo-app
+              app: client
+              service_name: client
+              __path__: /var/log/pods/todo-app_client-deployment-*/*/*.log
+          - targets:
+              - localhost
+            labels:
+              job: todo-app-static
+              namespace: todo-app
+              app: grafana
+              service_name: grafana
+              __path__: /var/log/pods/todo-app_grafana-deployment-*/*/*.log
+          - targets:
+              - localhost
+            labels:
+              job: todo-app-static
+              namespace: todo-app
+              app: prometheus
+              service_name: prometheus
+              __path__: /var/log/pods/todo-app_prometheus-deployment-*/*/*.log
+          - targets:
+              - localhost
+            labels:
+              job: todo-app-static
+              namespace: todo-app
+              app: loki
+              service_name: loki
+              __path__: /var/log/pods/todo-app_loki-deployment-*/*/*.log
+          - targets:
+              - localhost
+            labels:
+              job: todo-app-static
+              namespace: todo-app
+              app: jaeger
+              service_name: jaeger
+              __path__: /var/log/pods/todo-app_jaeger-deployment-*/*/*.log

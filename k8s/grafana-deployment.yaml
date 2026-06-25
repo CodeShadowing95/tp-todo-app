@@ -23,8 +23,6 @@ spec:
         env:
         - name: GF_SECURITY_ADMIN_PASSWORD
           value: "admin"
-        - name: GF_SERVER_ROOT_URL
-          value: "http://localhost:3001"
         - name: GF_INSTALL_PLUGINS
           value: ""
         volumeMounts:
@@ -59,6 +57,11 @@ spec:
       - name: provisioning
         configMap:
           name: grafana-provisioning
+          items:
+          - key: datasources.yml
+            path: datasources/datasources.yml
+          - key: dashboards.yml
+            path: dashboards/dashboards.yml
       - name: dashboards
         configMap:
           name: grafana-dashboard-backend
