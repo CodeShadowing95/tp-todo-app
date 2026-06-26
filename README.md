@@ -2,6 +2,84 @@
 
 Application Todo full-stack en monorepo (client + API) avec observabilité (Prometheus/Grafana).
 
+## Navigation rapide
+
+- [TP Todo App — Guide d'installation](#tp-todo-app--guide-dinstallation)
+  - [Navigation rapide](#navigation-rapide)
+  - [En 2 minutes (parcours professeur)](#en-2-minutes-parcours-professeur)
+    - [Option A - Verification locale rapide (Docker Compose)](#option-a---verification-locale-rapide-docker-compose)
+    - [Option B - Verification sur AKS (images ACR deja poussees)](#option-b---verification-sur-aks-images-acr-deja-poussees)
+  - [Securite](#securite)
+  - [Pré-requis](#pré-requis)
+  - [Démarrage rapide](#démarrage-rapide)
+  - [Démarrer l’application (Docker Compose)](#démarrer-lapplication-docker-compose)
+    - [Services \& URLs](#services--urls)
+    - [Vérifier que tout est “au vert”](#vérifier-que-tout-est-au-vert)
+  - [Accéder à l’application](#accéder-à-lapplication)
+    - [Compte de test](#compte-de-test)
+  - [Arrêter les services](#arrêter-les-services)
+  - [Onboarding (FR)](#onboarding-fr)
+  - [Lancer avec Docker (recommandé)](#lancer-avec-docker-recommandé)
+    - [Pré-requis](#pré-requis-1)
+    - [Étapes](#étapes)
+    - [Arrêter](#arrêter)
+    - [Logs utiles](#logs-utiles)
+  - [Lancer sans Docker](#lancer-sans-docker)
+    - [Pré-requis](#pré-requis-2)
+    - [Étapes](#étapes-1)
+  - [Lancer avec Kubernetes (local)](#lancer-avec-kubernetes-local)
+    - [Pré-requis](#pré-requis-3)
+    - [Étapes](#étapes-2)
+    - [Points clés pour Kubernetes local](#points-clés-pour-kubernetes-local)
+  - [Dépannage rapide](#dépannage-rapide)
+
+## En 2 minutes (parcours professeur)
+
+### Option A - Verification locale rapide (Docker Compose)
+
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+URLs:
+- App: https://localhost:8443
+- Grafana: http://localhost:3003
+- Prometheus: http://localhost:9091
+
+Compte de test:
+- Email: test@example.com
+- Mot de passe: Test1234
+
+### Option B - Verification sur AKS (images ACR deja poussees)
+
+```powershell
+kubectl config current-context
+kubectl apply -k k8s/overlays/azure
+kubectl get pods -n todo-app
+kubectl get svc -n todo-app
+```
+
+Points attendus:
+- Tous les pods en Running dans le namespace todo-app
+- Service gateway avec EXTERNAL-IP
+- Service grafana-service avec EXTERNAL-IP
+
+Acces rapide:
+- App: https://<EXTERNAL-IP-GATEWAY>:8443
+- Grafana: http://<EXTERNAL-IP-GRAFANA>:3001
+
+Si Prometheus est en ClusterIP:
+
+```powershell
+kubectl port-forward -n todo-app svc/prometheus-service 9090:9090
+```
+
+Puis ouvrir http://localhost:9090
+
+Guide de deploiement Azure detaille:
+- [azure/README.md](azure/README.md)
+
 ## Securite
 
 La CI GitHub Actions lance egalement des scans de vulnerabilites avec Trivy :
@@ -135,7 +213,11 @@ Après connexion, vous serez redirigé vers la page de gestion : création et ad
 
 ## Arrêter les services
 
-# TP Todo App — Onboarding (FR)
+```bash
+docker compose down
+```
+
+## Onboarding (FR)
 
 Application composée de:
 - Gateway Nginx : https://localhost:8443
@@ -293,10 +375,10 @@ Pour l'image de scan CI `apps/client/Dockerfile.scan`, Nginx tourne en utilisate
 docker run --rm -p 8080:8080 todo-client:scan
 ```
 
-**2) Configurer les secrets Kubernetes**
+**2) Configurer les secrets Kubernetes** (si vous êtes sur VSCode)
 
 ```powershell
-notepad k8s\secrets.yaml
+code k8s\secrets.yaml
 ```
 
 Renseignez au minimum :
@@ -388,7 +470,7 @@ Puis allez sur :
 - **Prometheus** : http://localhost:9090
 - **Jaeger UI** : http://localhost:16686
 
-Comme en Docker Compose, le certificat TLS du gateway est auto-signé et généré au démarrage. Le navigateur affichera donc un avertissement au premier accès en `https`.
+Comme en Docker Compose, le certificat TLS du gateway est auto-signé et généré au démarrage. Le navigateur affichera donc un avertissement au premier accès en `https`. Il faudra cliquer sur `Paramètres avancés`, ensuite sur `Continuer vers localhost(dangereux)` pour ouvrir la page de l'application.
 
 **6) Vérifier les logs**
 
