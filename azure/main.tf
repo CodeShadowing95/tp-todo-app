@@ -1,5 +1,5 @@
 locals {
-  normalized_project_name = substr(regexreplace(lower(var.project_name), "[^0-9a-z]", ""), 0, 12)
+  normalized_project_name = substr(replace(lower(var.project_name), "/[^0-9a-z]/", ""), 0, 12)
   acr_name                = "${local.normalized_project_name}${random_string.acr_suffix.result}acr"
 
   default_tags = {

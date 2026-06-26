@@ -18,7 +18,7 @@ variable "project_name" {
 
 variable "resource_group_location" {
   type        = string
-  default     = "germanywestcentral"
+  default     = "polandcentral"
   description = "Azure region used for the resource group and AKS cluster."
 }
 

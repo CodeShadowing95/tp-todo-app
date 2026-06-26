@@ -1,7 +1,7 @@
 subscription_id         = "00000000-0000-0000-0000-000000000000"
 tenant_id               = "00000000-0000-0000-0000-000000000000"
 project_name            = "todoapp"
-resource_group_location = "germanywestcentral"
+resource_group_location = "polandcentral"
 resource_group_prefix   = "rg-todo"
 acr_sku                 = "Basic"
 aks_name                = "todo-aks"
