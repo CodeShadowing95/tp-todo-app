@@ -7,9 +7,9 @@ Application Todo full-stack en monorepo (client + API) avec observabilité (Prom
 - [TP Todo App — Guide d'installation](#tp-todo-app--guide-dinstallation)
   - [Navigation rapide](#navigation-rapide)
   - [En 2 minutes (parcours professeur)](#en-2-minutes-parcours-professeur)
-    - [Option A - Verification locale rapide (Docker Compose)](#option-a---verification-locale-rapide-docker-compose)
-    - [Option B - Verification sur AKS (images ACR deja poussees)](#option-b---verification-sur-aks-images-acr-deja-poussees)
-  - [Securite](#securite)
+    - [Option A - Vérification locale rapide (Docker Compose)](#option-a---vérification-locale-rapide-docker-compose)
+    - [Option B - Vérification sur AKS (images ACR déjà poussées)](#option-b---vérification-sur-aks-images-acr-déjà-poussées)
+  - [Sécurité](#sécurité)
   - [Pré-requis](#pré-requis)
   - [Démarrage rapide](#démarrage-rapide)
   - [Démarrer l’application (Docker Compose)](#démarrer-lapplication-docker-compose)
@@ -35,7 +35,7 @@ Application Todo full-stack en monorepo (client + API) avec observabilité (Prom
 
 ## En 2 minutes (parcours professeur)
 
-### Option A - Verification locale rapide (Docker Compose)
+### Option A - Vérification locale rapide (Docker Compose)
 
 ```bash
 docker compose up -d --build
@@ -51,7 +51,7 @@ Compte de test:
 - Email: test@example.com
 - Mot de passe: Test1234
 
-### Option B - Verification sur AKS (images ACR deja poussees)
+### Option B - Vérification sur AKS (images ACR déjà poussées)
 
 ```powershell
 kubectl config current-context
@@ -65,7 +65,7 @@ Points attendus:
 - Service gateway avec EXTERNAL-IP
 - Service grafana-service avec EXTERNAL-IP
 
-Acces rapide:
+Accès rapide:
 - App: https://<EXTERNAL-IP-GATEWAY>:8443
 - Grafana: http://<EXTERNAL-IP-GRAFANA>:3001
 
@@ -77,24 +77,24 @@ kubectl port-forward -n todo-app svc/prometheus-service 9090:9090
 
 Puis ouvrir http://localhost:9090
 
-Guide de deploiement Azure detaille:
+Guide de déploiement Azure détaillé:
 - [azure/README.md](azure/README.md)
 
-## Securite
+## Sécurité
 
-La CI GitHub Actions lance egalement des scans de vulnerabilites avec Trivy :
+La CI GitHub Actions lance également des scans de vulnérabilités avec Trivy :
 
-- un scan du depot en mode filesystem pour les dependances et l'infrastructure as code ;
+- un scan du dépôt en mode filesystem pour les dépendances et l'infrastructure as code ;
 - un scan des images Docker construites pour `backend`, `auth`, `client` et `gateway`.
 
-Pour les services `backend`, `auth` et `client`, le depot distingue :
+Pour les services `backend`, `auth` et `client`, le dépôt distingue :
 
-- les images applicatives standard basees sur `Dockerfile`, utilisees pour le developpement ou le deploiement local ;
-- les images de scan CI basees sur `Dockerfile.scan`, durcies pour la CI et les controles Trivy.
+- les images applicatives standard basées sur `Dockerfile`, utilisées pour le développement ou le déploiement local ;
+- les images de scan CI basées sur `Dockerfile.scan`, durcies pour la CI et les contrôles Trivy.
 
-Les alertes `HIGH` et `CRITICAL` sont publiees dans l'onglet Security de GitHub via des rapports SARIF.
+Les alertes `HIGH` et `CRITICAL` sont publiées dans l'onglet Security de GitHub via des rapports SARIF.
 
-Exemple de verification locale :
+Exemple de vérification locale :
 
 ```bash
 trivy fs --severity HIGH,CRITICAL .
@@ -367,9 +367,9 @@ docker build -t todo-client:scan -f apps/client/Dockerfile.scan .
 docker build -t todo-gateway:latest -f gateway/Dockerfile .
 ```
 
-Les images de scan CI basees sur `Dockerfile.scan` sont concues pour la CI et les scans de securite. Elles peuvent differer des images applicatives standard sur la base utilisee, les paquets installes, l'utilisateur runtime et le port expose.
+Les images de scan CI basées sur `Dockerfile.scan` sont conçues pour la CI et les scans de sécurité. Elles peuvent différer des images applicatives standard sur la base utilisée, les paquets installés, l'utilisateur runtime et le port exposé.
 
-Pour l'image de scan CI `apps/client/Dockerfile.scan`, Nginx tourne en utilisateur non root et ecoute sur le port `8080`.
+Pour l'image de scan CI `apps/client/Dockerfile.scan`, Nginx tourne en utilisateur non root et écoute sur le port `8080`.
 
 ```bash
 docker run --rm -p 8080:8080 todo-client:scan
