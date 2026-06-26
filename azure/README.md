@@ -57,15 +57,37 @@ En particulier:
 az aks get-credentials --resource-group <rg-name> --name <aks-name> --overwrite-existing
 ```
 
+Verifier le contexte actif Kubernetes:
+
+```powershell
+kubectl config current-context
+kubectl config get-contexts
+```
+
+Le contexte attendu est celui du cluster AKS (par ex. `todo-aks`).
+
 ## 6. Se connecter a l'ACR
 
 ```powershell
 az acr login --name <acr-name>
 ```
 
+Verifier le contexte Docker actif:
+
+```powershell
+docker context show
+docker context ls
+```
+
+Le contexte `desktop-linux` est normal sur Docker Desktop.
+
 ## 7. Builder et pousser les images applicatives
 
 Depuis la racine du projet, remplacer `<acr-login-server>` par la valeur retournee par Terraform:
+
+```powershell
+Set-Location C:\Users\ukisu\Documents\tp-todo-app
+```
 
 ```powershell
 docker build -t <acr-login-server>/todo-backend:latest -f apps/backend/Dockerfile .
@@ -81,14 +103,50 @@ docker build -t <acr-login-server>/todo-gateway:latest -f gateway/Dockerfile .
 docker push <acr-login-server>/todo-gateway:latest
 ```
 
+Si vous obtenez une erreur du type `GetFileAttributesEx apps: Le fichier specifie est introuvable`, vous n'etes pas dans la racine du repository.
+
 ## 8. Deployer les manifests Kubernetes
 
-Le repertoire `k8s/overlays/azure/` remappe les images locales vers des images ACR. Remplacer d'abord `REPLACE_WITH_ACR_LOGIN_SERVER` dans `k8s/overlays/azure/kustomization.yaml`.
+Le repertoire `k8s/overlays/azure/` remappe les images vers ACR via la section `images`.
+Verifier les valeurs de `newName` dans `k8s/overlays/azure/kustomization.yaml`.
 
 Puis appliquer l'overlay:
 
 ```powershell
 kubectl apply -k k8s/overlays/azure
+```
+
+Validation rapide:
+
+```powershell
+kubectl kustomize k8s/overlays/azure | Out-Null
+kubectl get pods -n todo-app
+kubectl get svc -n todo-app
+```
+
+## 8.b Depannage courant AKS
+
+1. Pods `Pending` avec `Insufficient cpu`
+
+Cause: nodepool trop petit (souvent 1 seul noeud).
+
+```powershell
+az aks nodepool scale --resource-group <rg-name> --cluster-name <aks-name> --name system --node-count 2
+kubectl get pods -n todo-app -w
+```
+
+2. Erreur `PublicIPCountLimitReached` sur un service `LoadBalancer`
+
+Cause: quota IP publique regional atteint (ex. 3 IP max).
+
+Solutions:
+- passer certains services en `ClusterIP` (ex. Prometheus), puis utiliser un port-forward;
+- ou demander une augmentation de quota Azure.
+
+Exemple d'acces Prometheus sans IP publique:
+
+```powershell
+kubectl port-forward -n todo-app svc/prometheus-service 9090:9090
 ```
 
 ## 9. Secrets

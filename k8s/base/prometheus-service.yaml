@@ -11,4 +11,4 @@ spec:
     targetPort: 9090
     protocol: TCP
     name: http
-  type: LoadBalancer
+  type: ClusterIP
